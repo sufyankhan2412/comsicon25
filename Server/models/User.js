@@ -1,7 +1,7 @@
+// models/User.js
 import mongoose from 'mongoose';
-const { Schema, model } = mongoose;
 
-const UserSchema = new Schema({
+const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
@@ -17,13 +17,18 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ['manager', 'team_member'],
-    default: 'team_member'
+    enum: ['admin', 'manager', 'team-member'],
+    default: 'team-member'
   },
-  date: {
+  avatar: {
+    type: String
+  },
+  createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-export default model('User', UserSchema);
+const User = mongoose.model('User', UserSchema);
+
+export default User;

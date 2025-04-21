@@ -38,7 +38,7 @@ function Signup() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          role: 'Team_Member' // Default role for signup
+          role: 'team_member' // Default role for signup
         }),
       });
   
