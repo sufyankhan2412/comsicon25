@@ -6,11 +6,37 @@ function Login() {
   const navigate = useNavigate();
   const [role, setRole] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add your login form submission logic here
-    console.log('Login form submitted');
-    console.log('Selected role:', role);
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+    const role = e.target[2].value;
+  
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, role }),
+      });
+  
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.msg);
+  
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.role);
+      
+      // Redirect based on role
+      if (data.role === 'manager') {
+        navigate('/manager-dashboard');
+      } else {
+        navigate('/team-dashboard');
+      }
+    } catch (err) {
+      console.error(err.message);
+      alert(err.message);
+    }
   };
 
   const handleAppleLogin = () => {

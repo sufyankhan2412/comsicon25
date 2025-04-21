@@ -1,23 +1,22 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Login from './assets/pages/Login.jsx'
-
-import Signup from './assets/pages/Signup.jsx'
-
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './ProtectedRoute';
+import Login from './assets/pages/Login';
+import Signup from './assets/pages/Signup';
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <BrowserRouter>
-    <Routes>
-       <Route path="/" element={<Signup />} />
-      <Route path="/Signup" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
-    </Routes>
-  </BrowserRouter>
-  )
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Signup />} />
+        <Route path="/signup" element={<Signup />} />
+        
+        {/* <Route element={<ProtectedRoute />}>
+          <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+          <Route path="/team-dashboard" element={<TeamDashboard />} />
+        </Route> */}
+      </Routes>
+    </BrowserRouter>
+  );
 }
+
 export default App

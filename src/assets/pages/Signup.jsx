@@ -20,10 +20,37 @@ function Signup() {
     });
   };
 
-  const handleSubmit = (e) => {
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add your signup form submission logic here
-    console.log('Signup form submitted', formData);
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords don't match");
+      return;
+    }
+  
+    try {
+      const response = await fetch('http://localhost:5000/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: 'Team_Member' // Default role for signup
+        }),
+      });
+  
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.msg);
+  
+      alert('Registration successful! Please login.');
+      navigate('/login');
+    } catch (err) {
+      console.error(err.message);
+      alert(err.message);
+    }
   };
 
   const handleAppleSignup = () => {
