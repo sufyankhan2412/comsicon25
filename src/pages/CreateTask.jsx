@@ -62,18 +62,9 @@ const CreateTask = () => {
         if (!response.ok) throw new Error('Failed to fetch project details');
         const data = await response.json();
         
-        // Fetch full user details for team members
-        const memberPromises = data.teamMembers.map(memberId =>
-          fetch(`http://localhost:5000/api/users/${memberId}`, {
-            headers: {
-              'x-auth-token': token
-            }
-          }).then(res => res.json())
-        );
-
-        const memberDetails = await Promise.all(memberPromises);
+        // Use the populated team members directly from the project data
         setSelectedProject(data);
-        setProjectMembers(memberDetails);
+        setProjectMembers(data.teamMembers);
       } catch (err) {
         console.error('Error fetching project members:', err);
         setError('Failed to load project members');
@@ -131,13 +122,19 @@ const CreateTask = () => {
           'x-auth-token': token
         },
         body: JSON.stringify({
-          ...formData,
-          project: formData.project
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority,
+          status: formData.status,
+          assignedTo: formData.assignedTo,
+          dueDate: formData.dueDate,
+          createdBy: user.id
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create task');
+        const errorData = await response.json();
+        throw new Error(errorData.msg || 'Failed to create task');
       }
 
       navigate('/manager-dashboard/tasks');
@@ -259,28 +256,22 @@ const CreateTask = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Assigned To
+                Assign To
               </label>
               <select
                 name="assignedTo"
                 value={formData.assignedTo}
                 onChange={handleChange}
                 required
-                disabled={!formData.project}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select team member</option>
+                <option value="">Select a team member</option>
                 {projectMembers.map(member => (
                   <option key={member._id} value={member._id}>
-                    {member.name}
+                    {member.name} ({member.email})
                   </option>
                 ))}
               </select>
-              {!formData.project ? (
-                <p className="mt-1 text-sm text-gray-500">Select a project first to see available team members</p>
-              ) : projectMembers.length === 0 ? (
-                <p className="mt-1 text-sm text-gray-500">No team members assigned to this project</p>
-              ) : null}
             </div>
 
             <div>
