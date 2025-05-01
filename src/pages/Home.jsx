@@ -2,182 +2,211 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import "./Dashboard.css"
 
 const Home = () => {
-  const { user, token } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+  const mockTasks = [
+    {
+      _id: '1',
+      title: 'Frontend Development',
+      description: 'Implement the user dashboard interface with React and Tailwind CSS',
+      status: 'pending',
+      priority: 'high',
+      assignedTo: { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com' },
+      dueDate: '2024-03-20',
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: '2',
+      title: 'API Integration',
+      description: 'Connect frontend components with backend API endpoints',
+      status: 'in-progress',
+      priority: 'high',
+      assignedTo: { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com' },
+      dueDate: '2024-03-25',
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: '3',
+      title: 'User Authentication',
+      description: 'Implement JWT-based authentication system',
+      status: 'completed',
+      priority: 'medium',
+      assignedTo: { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com' },
+      dueDate: '2024-03-15',
+      createdAt: new Date().toISOString()
+    }
+  ];
+
+  const mockTeamMembers = [
+    { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com', role: 'Team Member' },
+    { _id: '2', name: 'sufyan', email: 'sufyan@gmail.com', role: 'Team Member' },
+    { _id: '3', name: 'Ashar Malik', email: 'asharmalik621@gmail.com', role: 'Team Member' }
+  ];
+
   const [stats, setStats] = useState({
     totalTasks: 0,
     pendingTasks: 0,
     completedTasks: 0,
-    teamMembers: 0
+    teamMembers: 3
   });
   const [recentTasks, setRecentTasks] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
+  const [teamMembers, setTeamMembers] = useState(mockTeamMembers);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch tasks
-        const tasksRes = await fetch('http://localhost:5000/api/tasks', {
-          headers: {
-            'x-auth-token': token
-          }
-        });
-        
-        if (!tasksRes.ok) {
-          throw new Error('Failed to fetch tasks');
-        }
-        
-        const tasks = await tasksRes.json();
-        
-        // Fetch users
-        const usersRes = await fetch('http://localhost:5000/api/users', {
-          headers: {
-            'x-auth-token': token
-          }
-        });
-        
-        if (!usersRes.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        
-        const users = await usersRes.json();
-        
-        // Update stats
-        setStats({
-          totalTasks: tasks.length,
-          pendingTasks: tasks.filter(task => task.status === 'pending').length,
-          completedTasks: tasks.filter(task => task.status === 'completed').length,
-          teamMembers: users.length
-        });
-        
-        // Set recent tasks (newest 5)
-        setRecentTasks(tasks.slice(0, 5));
-        
-        // Set team members
-        setTeamMembers(users.slice(0, 5));
-        
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Filter tasks for the current user
+    const userTasks = mockTasks.filter(task => 
+      task.assignedTo.email === 'asharmalik6231@gmail.com'
+    );
     
-    fetchData();
-  }, [token]);
+    setStats({
+      totalTasks: userTasks.length,
+      pendingTasks: userTasks.filter(task => task.status === 'pending').length,
+      completedTasks: userTasks.filter(task => task.status === 'completed').length,
+      teamMembers: 3
+    });
+    
+    // Sort tasks by creation date and take the 5 most recent
+    const sortedTasks = [...userTasks].sort((a, b) => 
+      new Date(b.createdAt) - new Date(a.createdAt)
+    ).slice(0, 5);
+    
+    setRecentTasks(sortedTasks);
+    setLoading(false);
+  }, []);
 
   const getStatusClass = (status) => {
     switch (status) {
       case 'completed':
-        return 'status-completed';
+        return 'bg-green-100 text-green-800';
       case 'in-progress':
-        return 'status-progress';
+        return 'bg-blue-100 text-blue-800';
       default:
-        return 'status-pending';
+        return 'bg-yellow-100 text-yellow-800';
     }
   };
   
   const getPriorityClass = (priority) => {
     switch (priority) {
       case 'high':
-        return 'priority-high';
+        return 'bg-red-100 text-red-800';
       case 'medium':
-        return 'priority-medium';
+        return 'bg-yellow-100 text-yellow-800';
       default:
-        return 'priority-low';
+        return 'bg-green-100 text-green-800';
     }
   };
   
   if (loading) {
-    return <div className="loading">Loading dashboard data...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-600">Loading dashboard data...</div>
+      </div>
+    );
   }
   
   return (
-    <div className="home-container">
-      <header className="dashboard-header">
-        <h1>Welcome back, {user.name}</h1>
-        <p className="date">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+    <div className="space-y-8">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user.name}</h1>
+        <p className="text-gray-500">
+          {new Date().toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}
+        </p>
       </header>
       
-      <div className="stats-container">
-        <div className="stat-card">
-          <div className="stat-icon tasks-icon">
-            <i className="fas fa-tasks"></i>
-          </div>
-          <div className="stat-details">
-            <h3>Total Tasks</h3>
-            <p className="stat-number">{stats.totalTasks}</p>
-          </div>
-        </div>
-        
-        <div className="stat-card">
-          <div className="stat-icon pending-icon">
-            <i className="fas fa-clock"></i>
-          </div>
-          <div className="stat-details">
-            <h3>Pending Tasks</h3>
-            <p className="stat-number">{stats.pendingTasks}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-primary-100 text-primary-600">
+              <i className="fas fa-tasks text-xl"></i>
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-500">Total Tasks</h3>
+              <p className="text-2xl font-semibold text-gray-900">{stats.totalTasks}</p>
+            </div>
           </div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-icon completed-icon">
-            <i className="fas fa-check-circle"></i>
-          </div>
-          <div className="stat-details">
-            <h3>Completed Tasks</h3>
-            <p className="stat-number">{stats.completedTasks}</p>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
+              <i className="fas fa-clock text-xl"></i>
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-500">Pending Tasks</h3>
+              <p className="text-2xl font-semibold text-gray-900">{stats.pendingTasks}</p>
+            </div>
           </div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-icon team-icon">
-            <i className="fas fa-users"></i>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-green-100 text-green-600">
+              <i className="fas fa-check-circle text-xl"></i>
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-500">Completed Tasks</h3>
+              <p className="text-2xl font-semibold text-gray-900">{stats.completedTasks}</p>
+            </div>
           </div>
-          <div className="stat-details">
-            <h3>Team Members</h3>
-            <p className="stat-number">{stats.teamMembers}</p>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+              <i className="fas fa-users text-xl"></i>
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-500">Team Members</h3>
+              <p className="text-2xl font-semibold text-gray-900">{stats.teamMembers}</p>
+            </div>
           </div>
         </div>
       </div>
       
-      <div className="dashboard-sections">
-        <section className="recent-tasks">
-          <div className="section-header">
-            <h2>Recent Tasks</h2>
-            <Link to="/dashboard/tasks" className="view-all">View All</Link>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Recent Tasks</h2>
+            <Link 
+              to="/dashboard/tasks" 
+              className="text-sm font-medium text-primary-600 hover:text-primary-500"
+            >
+              View All
+            </Link>
           </div>
           
           {recentTasks.length === 0 ? (
-            <p className="no-data">No tasks found</p>
+            <p className="text-gray-500 text-center py-4">No tasks found</p>
           ) : (
-            <div className="tasks-list">
+            <div className="space-y-4">
               {recentTasks.map(task => (
-                <div className="task-item" key={task._id}>
-                  <div className="task-header">
-                    <h3 className="task-title">{task.title}</h3>
-                    <span className={`task-status ${getStatusClass(task.status)}`}>
+                <div key={task._id} className="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-medium text-gray-900">{task.title}</h3>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusClass(task.status)}`}>
                       {task.status}
                     </span>
                   </div>
-                  <p className="task-description">{task.description}</p>
-                  <div className="task-meta">
-                    <div className="task-assignee">
-                      <span className="meta-label">Assigned to:</span>
-                      <span className="meta-value">{task.assignedTo.name}</span>
+                  <p className="text-gray-600 mb-3">{task.description}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">Assigned to:</span>
+                      <span className="text-sm font-medium text-gray-900">{task.assignedTo.name}</span>
                     </div>
-                    <div className="task-priority">
-                      <span className={`priority-badge ${getPriorityClass(task.priority)}`}>
-                        {task.priority}
-                      </span>
-                    </div>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityClass(task.priority)}`}>
+                      {task.priority}
+                    </span>
                   </div>
                   {task.dueDate && (
-                    <div className="task-due-date">
-                      <i className="far fa-calendar-alt"></i>
+                    <div className="mt-2 flex items-center text-sm text-gray-500">
+                      <i className="far fa-calendar-alt mr-2"></i>
                       <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
                     </div>
                   )}
@@ -187,24 +216,24 @@ const Home = () => {
           )}
         </section>
         
-        <section className="team-members">
-          <div className="section-header">
-            <h2>Team Members</h2>
+        <section className="bg-white rounded-lg shadow p-6">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Team Members</h2>
           </div>
           
           {teamMembers.length === 0 ? (
-            <p className="no-data">No team members found</p>
+            <p className="text-gray-500 text-center py-4">No team members found</p>
           ) : (
-            <div className="members-list">
+            <div className="space-y-4">
               {teamMembers.map(member => (
-                <div className="member-item" key={member._id}>
-                  <div className="member-avatar">
+                <div key={member._id} className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {member.name.charAt(0)}
                   </div>
-                  <div className="member-details">
-                    <h3 className="member-name">{member.name}</h3>
-                    <p className="member-role">{member.role}</p>
-                    <p className="member-email">{member.email}</p>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900">{member.name}</h3>
+                    <p className="text-xs text-gray-500 capitalize">{member.role}</p>
+                    <p className="text-xs text-gray-500">{member.email}</p>
                   </div>
                 </div>
               ))}

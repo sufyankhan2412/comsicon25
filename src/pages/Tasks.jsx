@@ -1,88 +1,60 @@
 // pages/dashboard/Tasks.js
-import { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
-import "./Dashboard.css"
+import { useState, useEffect } from 'react';
 
 const Tasks = () => {
-  const { token, user } = useContext(AuthContext);
-  const [tasks, setTasks] = useState([]);
+  const mockTasks = [
+    {
+      _id: '1',
+      title: 'Frontend Development',
+      description: 'Implement the user dashboard interface with React and Tailwind CSS',
+      status: 'pending',
+      priority: 'high',
+      assignedTo: { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com' },
+      dueDate: '2024-03-20',
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: '2',
+      title: 'API Integration',
+      description: 'Connect frontend components with backend API endpoints',
+      status: 'in-progress',
+      priority: 'high',
+      assignedTo: { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com' },
+      dueDate: '2024-03-25',
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: '3',
+      title: 'User Authentication',
+      description: 'Implement JWT-based authentication system',
+      status: 'completed',
+      priority: 'medium',
+      assignedTo: { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com' },
+      dueDate: '2024-03-15',
+      createdAt: new Date().toISOString()
+    }
+  ];
+
+  const [tasks, setTasks] = useState(mockTasks);
   const [filteredTasks, setFilteredTasks] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // New task form state
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    priority: 'medium',
-    assignedTo: '',
-    dueDate: ''
-  });
-  const [formLoading, setFormLoading] = useState(false);
-  
-  // Edit task state
-  const [editMode, setEditMode] = useState(false);
-  const [editTaskId, setEditTaskId] = useState(null);
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch tasks
-        const tasksRes = await fetch('http://localhost:5000/api/tasks', {
-          headers: {
-            'x-auth-token': token
-          }
-        });
-        
-        if (!tasksRes.ok) {
-          throw new Error('Failed to fetch tasks');
-        }
-        
-        const tasksData = await tasksRes.json();
-        setTasks(tasksData);
-        setFilteredTasks(tasksData);
-        
-        // Fetch users for assigning tasks
-        const usersRes = await fetch('http://localhost:5000/api/users', {
-          headers: {
-            'x-auth-token': token
-          }
-        });
-        
-        if (!usersRes.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        
-        const usersData = await usersRes.json();
-        setUsers(usersData);
-        
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load tasks. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, [token]);
-  
+
   // Filter tasks when filter or search changes
   useEffect(() => {
-    let result = [...tasks];
+    // First filter by user's email
+    let result = tasks.filter(task => 
+      task.assignedTo.email === 'asharmalik6231@gmail.com'
+    );
     
-    // Apply status filter
+    // Then apply status filter
     if (filter !== 'all') {
       result = result.filter(task => task.status === filter);
     }
     
-    // Apply search term
+    // Then apply search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(task => 
@@ -93,427 +65,133 @@ const Tasks = () => {
     
     setFilteredTasks(result);
   }, [filter, searchTerm, tasks]);
-  
-  const handleFormChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-  
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      priority: 'medium',
-      assignedTo: '',
-      dueDate: ''
-    });
-    setEditMode(false);
-    setEditTaskId(null);
-  };
-  
-  const handleAddTask = async (e) => {
-    e.preventDefault();
-    
+
+  const handleStatusChange = (taskId, newStatus) => {
     try {
-      setFormLoading(true);
-      
-      const response = await fetch('http://localhost:5000/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to add task');
-      }
-      
-      const newTask = await response.json();
-      
-      // Update tasks list
-      setTasks([newTask, ...tasks]);
-      
-      // Reset form and hide it
-      resetForm();
-      setShowForm(false);
-      
-    } catch (err) {
-      console.error('Error adding task:', err);
-      setError('Failed to add task. Please try again.');
-    } finally {
-      setFormLoading(false);
-    }
-  };
-  
-  const handleEditTask = async (e) => {
-    e.preventDefault();
-    
-    try {
-      setFormLoading(true);
-      
-      const response = await fetch(`http://localhost:5000/api/tasks/${editTaskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update task');
-      }
-      
-      const updatedTask = await response.json();
-      
-      // Update tasks list
-      setTasks(tasks.map(task => 
-        task._id === editTaskId ? updatedTask : task
-      ));
-      
-      // Reset form and hide it
-      resetForm();
-      setShowForm(false);
-      
-    } catch (err) {
-      console.error('Error updating task:', err);
-      setError('Failed to update task. Please try again.');
-    } finally {
-      setFormLoading(false);
-    }
-  };
-  
-  const handleDeleteTask = async (taskId) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) {
-      return;
-    }
-    
-    try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
-        method: 'DELETE',
-        headers: {
-          'x-auth-token': token
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete task');
-      }
-      
-      // Remove task from list
-      setTasks(tasks.filter(task => task._id !== taskId));
-      
-    } catch (err) {
-      console.error('Error deleting task:', err);
-      setError('Failed to delete task. Please try again.');
-    }
-  };
-  
-  const handleStatusChange = async (taskId, newStatus) => {
-    try {
-      const taskToUpdate = tasks.find(task => task._id === taskId);
-      
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token
-        },
-        body: JSON.stringify({ ...taskToUpdate, status: newStatus })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update task status');
-      }
-      
-      const updatedTask = await response.json();
-      
-      // Update tasks list
-      setTasks(tasks.map(task => 
-        task._id === taskId ? updatedTask : task
-      ));
-      
+      // Update the tasks state with the new status
+      const updatedTasks = tasks.map(task =>
+        task._id === taskId ? { ...task, status: newStatus } : task
+      );
+      setTasks(updatedTasks);
     } catch (err) {
       console.error('Error updating task status:', err);
       setError('Failed to update task status. Please try again.');
     }
   };
   
-  const editTask = (task) => {
-    setFormData({
-      title: task.title,
-      description: task.description,
-      priority: task.priority,
-      assignedTo: task.assignedTo._id,
-      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''
-    });
-    setEditMode(true);
-    setEditTaskId(task._id);
-    setShowForm(true);
-  };
-  
   const getStatusClass = (status) => {
     switch (status) {
-      case 'completed':
-        return 'status-completed';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
       case 'in-progress':
-        return 'status-progress';
+        return 'bg-blue-100 text-blue-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
       default:
-        return 'status-pending';
+        return 'bg-gray-100 text-gray-800';
     }
   };
   
   const getPriorityClass = (priority) => {
     switch (priority) {
       case 'high':
-        return 'priority-high';
+        return 'bg-red-100 text-red-800';
       case 'medium':
-        return 'priority-medium';
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-green-100 text-green-800';
       default:
-        return 'priority-low';
+        return 'bg-gray-100 text-gray-800';
     }
   };
   
   if (loading) {
-    return <div className="loading">Loading tasks...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-gray-600">Loading tasks...</div>
+      </div>
+    );
   }
   
   return (
-    <div className="tasks-container">
-      <header className="tasks-header">
-        <h1>Tasks Management</h1>
-        <button 
-          className="btn-add-task" 
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-        >
-          {showForm ? 'Cancel' : 'Add New Task'}
-        </button>
-      </header>
-      
-      {error && <div className="error-message">{error}</div>}
-      
-      {showForm && (
-        <div className="task-form-container">
-          <form onSubmit={editMode ? handleEditTask : handleAddTask} className="task-form">
-            <h2>{editMode ? 'Edit Task' : 'Add New Task'}</h2>
-            
-            <div className="form-group">
-              <label htmlFor="title">Title</label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleFormChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleFormChange}
-                required
-              />
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="priority">Priority</label>
-                <select
-                  id="priority"
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleFormChange}
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="assignedTo">Assign To</label>
-                <select
-                  id="assignedTo"
-                  name="assignedTo"
-                  value={formData.assignedTo}
-                  onChange={handleFormChange}
-                  required
-                >
-                  <option value="">Select Team Member</option>
-                  {users.map(user => (
-                    <option key={user._id} value={user._id}>
-                      {user.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="dueDate">Due Date</label>
-              <input
-                type="date"
-                id="dueDate"
-                name="dueDate"
-                value={formData.dueDate}
-                onChange={handleFormChange}
-              />
-            </div>
-            
-            <div className="form-actions">
-              <button 
-                type="button" 
-                className="btn-cancel"
-                onClick={() => {
-                  resetForm();
-                  setShowForm(false);
-                }}
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                className="btn-submit"
-                disabled={formLoading}
-              >
-                {formLoading ? 'Saving...' : (editMode ? 'Update Task' : 'Add Task')}
-              </button>
-            </div>
-          </form>
+    <div className="p-6">
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">
+          {error}
         </div>
       )}
-      
-      <div className="tasks-filters">
-        <div className="filter-controls">
-          <button 
-            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => setFilter('all')}
-          >
-            All
-          </button>
-          <button 
-            className={`filter-btn ${filter === 'pending' ? 'active' : ''}`}
-            onClick={() => setFilter('pending')}
-          >
-            Pending
-          </button>
-          <button 
-            className={`filter-btn ${filter === 'in-progress' ? 'active' : ''}`}
-            onClick={() => setFilter('in-progress')}
-          >
-            In Progress
-          </button>
-          <button 
-            className={`filter-btn ${filter === 'completed' ? 'active' : ''}`}
-            onClick={() => setFilter('completed')}
-          >
-            Completed
-          </button>
-        </div>
-        
-        <div className="search-container">
+
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold text-gray-800">My Tasks</h1>
+      </div>
+
+      <div className="mb-6 flex space-x-4">
+        <div className="flex-1">
           <input
             type="text"
             placeholder="Search tasks..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        >
+          <option value="all">All Tasks</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
       </div>
-      
-      {filteredTasks.length === 0 ? (
-        <div className="no-tasks">
-          <p>No tasks found. {filter !== 'all' && 'Try changing your filter.'}</p>
-        </div>
-      ) : (
-        <div className="tasks-list">
-          {filteredTasks.map(task => (
-            <div className="task-card" key={task._id}>
-              <div className="task-header">
-                <h3 className="task-title">{task.title}</h3>
-                <div className="task-actions">
-                  {user._id === task.createdBy._id && (
-                    <>
-                      <button 
-                        className="action-btn edit-btn"
-                        onClick={() => editTask(task)}
-                      >
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button 
-                        className="action-btn delete-btn"
-                        onClick={() => handleDeleteTask(task._id)}
-                      >
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </>
-                  )}
+
+      <div className="grid gap-6">
+        {filteredTasks.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No tasks found. {searchTerm ? 'Try a different search term.' : 'You have no assigned tasks at the moment.'}
+          </div>
+        ) : (
+          filteredTasks.map(task => (
+            <div
+              key={task._id}
+              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">{task.title}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{task.description}</p>
                 </div>
               </div>
-              
-              <p className="task-description">{task.description}</p>
-              
-              <div className="task-meta">
-                <div className="meta-item">
-                  <span className="meta-label">Assigned to:</span>
-                  <span className="meta-value">{task.assignedTo.name}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="meta-label">Priority:</span>
-                  <span className={`priority-badge ${getPriorityClass(task.priority)}`}>
-                    {task.priority}
-                  </span>
-                </div>
+              <div className="flex flex-wrap gap-2">
+                <span className={`px-3 py-1 rounded-full text-sm ${getStatusClass(task.status)}`}>
+                  {task.status}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm ${getPriorityClass(task.priority)}`}>
+                  {task.priority}
+                </span>
                 {task.dueDate && (
-                  <div className="meta-item">
-                    <span className="meta-label">Due date:</span>
-                    <span className="meta-value">
-                      {new Date(task.dueDate).toLocaleDateString()}
-                    </span>
-                  </div>
+                  <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
+                    Due: {new Date(task.dueDate).toLocaleDateString()}
+                  </span>
                 )}
               </div>
-              
-              <div className="task-status-section">
-                <span className="meta-label">Status:</span>
-                <div className="status-controls">
-                  <button 
-                    className={`status-btn ${task.status === 'pending' ? getStatusClass('pending') : ''}`}
-                    onClick={() => handleStatusChange(task._id, 'pending')}
-                  >
-                    Pending
-                  </button>
-                  <button 
-                    className={`status-btn ${task.status === 'in-progress' ? getStatusClass('in-progress') : ''}`}
-                    onClick={() => handleStatusChange(task._id, 'in-progress')}
-                  >
-                    In Progress
-                  </button>
-                  <button 
-                    className={`status-btn ${task.status === 'completed' ? getStatusClass('completed') : ''}`}
-                    onClick={() => handleStatusChange(task._id, 'completed')}
-                  >
-                    Completed
-                  </button>
-                </div>
+              <div className="mt-4 flex justify-end">
+                <select
+                  value={task.status}
+                  onChange={(e) => handleStatusChange(task._id, e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };

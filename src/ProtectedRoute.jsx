@@ -7,7 +7,11 @@ const ProtectedRoute = () => {
   const { isAuthenticated, loading } = useContext(AuthContext);
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg text-gray-600">Loading...</div>
+      </div>
+    );
   }
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;

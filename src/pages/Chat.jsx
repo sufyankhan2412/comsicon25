@@ -2,7 +2,6 @@
 import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import io from 'socket.io-client';
-import "./Dashboard.css"
 
 const Chat = () => {
   const { user, token } = useContext(AuthContext);
@@ -113,64 +112,74 @@ const Chat = () => {
   };
   
   if (loading) {
-    return <div className="loading">Loading chat...</div>;
+    return <div className="flex items-center justify-center h-full text-gray-600">Loading chat...</div>;
   }
   
   return (
-    <div className="chat-container">
-      <header className="chat-header">
-        <h1>Team Chat</h1>
+    <div className="flex flex-col h-full bg-white rounded-lg shadow">
+      <header className="p-4 border-b border-gray-200">
+        <h1 className="text-xl font-semibold text-gray-800">Team Chat</h1>
       </header>
       
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="p-4 text-red-600 bg-red-50">{error}</div>}
       
-      <div className="chat-main">
-        <aside className="chat-sidebar">
-          <div className="sidebar-section">
-            <h3 className="sidebar-title">Team Members</h3>
-            <ul className="users-list">
+      <div className="flex flex-1 overflow-hidden">
+        <aside className="w-64 border-r border-gray-200 p-4 overflow-y-auto">
+          <div className="mb-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Team Members</h3>
+            <ul className="space-y-2">
               {onlineUsers.length > 0 ? (
                 onlineUsers.map(onlineUser => (
-                  <li key={onlineUser._id} className="user-item">
-                    <div className="user-avatar">
+                  <li key={onlineUser._id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                    <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold">
                       {onlineUser.name.charAt(0)}
                     </div>
-                    <div className="user-info">
-                      <span className="user-name">{onlineUser.name}</span>
-                      <span className="user-status online">Online</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-gray-900 truncate">{onlineUser.name}</span>
+                      <span className="text-xs text-green-500">Online</span>
                     </div>
                   </li>
                 ))
               ) : (
-                <li className="no-users">No one online</li>
+                <li className="text-sm text-gray-500">No one online</li>
               )}
             </ul>
           </div>
         </aside>
         
-        <div className="chat-messages-container">
-          <div className="messages-list">
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 overflow-y-auto p-4">
             {messages.length === 0 ? (
-              <div className="no-messages">
+              <div className="flex items-center justify-center h-full text-gray-500">
                 <p>No messages yet. Start the conversation!</p>
               </div>
             ) : (
               messages.map((message, index) => (
                 <div 
                   key={message._id || index} 
-                  className={`message ${message.sender._id === user._id ? 'message-own' : 'message-other'}`}
+                  className={`flex flex-col mb-4 ${
+                    message.sender._id === user._id ? 'items-end' : 'items-start'
+                  }`}
                 >
                   {message.sender._id !== user._id && (
-                    <div className="message-sender">
-                      <div className="sender-avatar">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <div className="w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center text-white text-xs">
                         {message.sender.name.charAt(0)}
                       </div>
-                      <span className="sender-name">{message.sender.name}</span>
+                      <span className="text-sm font-medium text-gray-900">{message.sender.name}</span>
                     </div>
                   )}
-                  <div className="message-content">
-                    <p>{message.content}</p>
-                    <span className="message-time">{formatTimestamp(message.timestamp)}</span>
+                  <div className={`max-w-[70%] rounded-lg p-3 ${
+                    message.sender._id === user._id 
+                      ? 'bg-primary-600 text-white' 
+                      : 'bg-gray-100 text-gray-900'
+                  }`}>
+                    <p className="text-sm">{message.content}</p>
+                    <span className={`text-xs mt-1 block ${
+                      message.sender._id === user._id ? 'text-primary-100' : 'text-gray-500'
+                    }`}>
+                      {formatTimestamp(message.timestamp)}
+                    </span>
                   </div>
                 </div>
               ))
@@ -178,17 +187,22 @@ const Chat = () => {
             <div ref={messagesEndRef} />
           </div>
           
-          <form onSubmit={handleSendMessage} className="message-form">
-            <input
-              type="text"
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              placeholder="Type your message..."
-              className="message-input"
-            />
-            <button type="submit" className="send-button">
-              <i className="fas fa-paper-plane"></i>
-            </button>
+          <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+              <button 
+                type="submit" 
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              >
+                <i className="fas fa-paper-plane"></i>
+              </button>
+            </div>
           </form>
         </div>
       </div>

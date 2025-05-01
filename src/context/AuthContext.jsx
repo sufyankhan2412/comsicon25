@@ -13,9 +13,12 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const res = await fetch('http://localhost:5000/api/users/me', {
+            method: 'GET',
             headers: {
+              'Content-Type': 'application/json',
               'x-auth-token': token
-            }
+            },
+            credentials: 'include'
           });
           
           if (res.ok) {
@@ -23,14 +26,19 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
           } else {
             // Token invalid
+            console.error('Token invalid');
             localStorage.removeItem('token');
             setToken(null);
+            setUser(null);
           }
         } catch (err) {
           console.error('Error loading user', err);
           localStorage.removeItem('token');
           setToken(null);
+          setUser(null);
         }
+      } else {
+        setLoading(false);
       }
       setLoading(false);
     };
@@ -38,10 +46,15 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, [token]);
 
-  const login = (userData, authToken) => {
-    localStorage.setItem('token', authToken);
-    setToken(authToken);
-    setUser(userData);
+  const login = async (userData, authToken) => {
+    try {
+      localStorage.setItem('token', authToken);
+      setToken(authToken);
+      setUser(userData);
+    } catch (error) {
+      console.error('Login error:', error);
+      logout();
+    }
   };
 
   const logout = () => {
@@ -49,6 +62,10 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <AuthContext.Provider
@@ -58,7 +75,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         logout,
-        isAuthenticated: !!token
+        isAuthenticated: !!token && !!user
       }}
     >
       {children}
