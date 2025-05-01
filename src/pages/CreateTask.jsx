@@ -4,39 +4,72 @@ import { AuthContext } from '../context/AuthContext';
 import ManagerLayout from '../components/ManagerLayout';
 
 const CreateTask = () => {
-  const { token } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [teamMembers, setTeamMembers] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [projectMembers, setProjectMembers] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 'medium',
     status: 'pending',
     assignedTo: '',
-    dueDate: ''
+    dueDate: '',
+    project: ''
   });
 
+  // Fetch available projects (excluding completed ones)
   useEffect(() => {
-    const fetchTeamMembers = async () => {
+    const fetchProjects = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/users', {
+        const response = await fetch('http://localhost:5000/api/projects', {
           headers: {
             'x-auth-token': token
           }
         });
-        if (!response.ok) throw new Error('Failed to fetch team members');
+        if (!response.ok) throw new Error('Failed to fetch projects');
         const data = await response.json();
-        setTeamMembers(data);
+        // Filter out completed projects
+        const activeProjects = data.filter(project => project.status !== 'completed');
+        setProjects(activeProjects);
       } catch (err) {
-        console.error('Error fetching team members:', err);
-        setError('Failed to load team members');
+        console.error('Error fetching projects:', err);
+        setError('Failed to load projects');
       }
     };
 
-    fetchTeamMembers();
+    fetchProjects();
   }, [token]);
+
+  // Fetch project members when a project is selected
+  useEffect(() => {
+    const fetchProjectMembers = async () => {
+      if (!formData.project) {
+        setProjectMembers([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:5000/api/projects/${formData.project}`, {
+          headers: {
+            'x-auth-token': token
+          }
+        });
+        if (!response.ok) throw new Error('Failed to fetch project details');
+        const data = await response.json();
+        setSelectedProject(data);
+        setProjectMembers(data.teamMembers || []);
+      } catch (err) {
+        console.error('Error fetching project members:', err);
+        setError('Failed to load project members');
+      }
+    };
+
+    fetchProjectMembers();
+  }, [formData.project, token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,7 +91,10 @@ const CreateTask = () => {
           'Content-Type': 'application/json',
           'x-auth-token': token
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          project: formData.project
+        })
       });
 
       if (!response.ok) {
@@ -74,6 +110,19 @@ const CreateTask = () => {
     }
   };
 
+  // Only render for managers
+  if (user?.role !== 'manager') {
+    return (
+      <ManagerLayout>
+        <div className="p-6">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
+            <span className="block sm:inline">You don't have permission to create tasks.</span>
+          </div>
+        </div>
+      </ManagerLayout>
+    );
+  }
+
   return (
     <ManagerLayout>
       <div className="space-y-6">
@@ -88,6 +137,26 @@ const CreateTask = () => {
         )}
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Project
+            </label>
+            <select
+              name="project"
+              value={formData.project}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Select a project</option>
+              {projects.map(project => (
+                <option key={project._id} value={project._id}>
+                  {project.name} ({project.status})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Title
@@ -158,15 +227,19 @@ const CreateTask = () => {
                 value={formData.assignedTo}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={!formData.project}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
                 <option value="">Select team member</option>
-                {teamMembers.map(member => (
+                {projectMembers.map(member => (
                   <option key={member._id} value={member._id}>
                     {member.name}
                   </option>
                 ))}
               </select>
+              {!formData.project && (
+                <p className="mt-1 text-sm text-gray-500">Select a project first to see available team members</p>
+              )}
             </div>
 
             <div>
@@ -179,15 +252,22 @@ const CreateTask = () => {
                 required
                 value={formData.dueDate}
                 onChange={handleChange}
+                min={selectedProject?.startDate?.split('T')[0]}
+                max={selectedProject?.endDate?.split('T')[0]}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              {selectedProject && (
+                <p className="mt-1 text-sm text-gray-500">
+                  Project duration: {new Date(selectedProject.startDate).toLocaleDateString()} - {new Date(selectedProject.endDate).toLocaleDateString()}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !formData.project}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating...' : 'Create Task'}
