@@ -41,6 +41,25 @@ const CreateProject = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    if (name === 'startDate' || name === 'endDate') {
+      const startDate = name === 'startDate' ? value : formData.startDate;
+      const endDate = name === 'endDate' ? value : formData.endDate;
+      
+      // Clear end date if start date is after it
+      if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: value,
+          endDate: name === 'startDate' ? '' : endDate
+        }));
+        setError('Start date cannot be after end date');
+        return;
+      } else {
+        setError('');
+      }
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -144,9 +163,11 @@ const CreateProject = () => {
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleChange}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                   className="mt-1 block w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+                <p className="mt-1 text-xs text-gray-500">Start date must not be in the past</p>
               </div>
 
               <div>
@@ -159,9 +180,11 @@ const CreateProject = () => {
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleChange}
+                  min={formData.startDate || new Date().toISOString().split('T')[0]}
                   required
                   className="mt-1 block w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+                <p className="mt-1 text-xs text-gray-500">End date must be after start date</p>
               </div>
             </div>
 
@@ -184,13 +207,10 @@ const CreateProject = () => {
             </div>
 
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700">
                 Team Members
               </label>
-              <div 
-                className="mt-1 relative"
-                onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
-              >
+              <div className="mt-1 relative">
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -202,31 +222,24 @@ const CreateProject = () => {
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    <div className="overflow-y-auto max-h-60">
-                      {teamMembers.map(member => (
-                        <div
-                          key={member._id}
-                          className="px-4 py-2 hover:bg-gray-100 flex items-center"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={formData.teamMembers.includes(member._id)}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              handleTeamMemberToggle(member._id);
-                            }}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3 cursor-pointer"
-                          />
-                          <span 
-                            className="cursor-pointer"
-                            onClick={() => handleTeamMemberToggle(member._id)}
-                          >
-                            {member.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                  <div 
+                    className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg"
+                    style={{ maxHeight: '250px', overflowY: 'auto' }}
+                  >
+                    {teamMembers.map(member => (
+                      <label
+                        key={member._id}
+                        className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.teamMembers.includes(member._id)}
+                          onChange={() => handleTeamMemberToggle(member._id)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3"
+                        />
+                        <span className="text-gray-700">{member.name}</span>
+                      </label>
+                    ))}
                   </div>
                 )}
               </div>

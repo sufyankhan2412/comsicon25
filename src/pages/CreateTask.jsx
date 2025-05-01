@@ -49,6 +49,7 @@ const CreateTask = () => {
     const fetchProjectMembers = async () => {
       if (!formData.project) {
         setProjectMembers([]);
+        setSelectedProject(null);
         return;
       }
 
@@ -60,8 +61,19 @@ const CreateTask = () => {
         });
         if (!response.ok) throw new Error('Failed to fetch project details');
         const data = await response.json();
+        
+        // Fetch full user details for team members
+        const memberPromises = data.teamMembers.map(memberId =>
+          fetch(`http://localhost:5000/api/users/${memberId}`, {
+            headers: {
+              'x-auth-token': token
+            }
+          }).then(res => res.json())
+        );
+
+        const memberDetails = await Promise.all(memberPromises);
         setSelectedProject(data);
-        setProjectMembers(data.teamMembers || []);
+        setProjectMembers(memberDetails);
       } catch (err) {
         console.error('Error fetching project members:', err);
         setError('Failed to load project members');
@@ -73,10 +85,37 @@ const CreateTask = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+
+    if (name === 'project') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        assignedTo: '', // Reset assigned member when project changes
+        dueDate: '' // Reset due date when project changes
+      }));
+    } else if (name === 'dueDate') {
+      if (selectedProject) {
+        const projectStart = new Date(selectedProject.startDate);
+        const projectEnd = new Date(selectedProject.endDate);
+        const selectedDate = new Date(value);
+
+        if (selectedDate < projectStart || selectedDate > projectEnd) {
+          setError('Due date must be within the project duration');
+          return;
+        } else {
+          setError(null);
+        }
+      }
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -237,9 +276,11 @@ const CreateTask = () => {
                   </option>
                 ))}
               </select>
-              {!formData.project && (
+              {!formData.project ? (
                 <p className="mt-1 text-sm text-gray-500">Select a project first to see available team members</p>
-              )}
+              ) : projectMembers.length === 0 ? (
+                <p className="mt-1 text-sm text-gray-500">No team members assigned to this project</p>
+              ) : null}
             </div>
 
             <div>
@@ -254,12 +295,15 @@ const CreateTask = () => {
                 onChange={handleChange}
                 min={selectedProject?.startDate?.split('T')[0]}
                 max={selectedProject?.endDate?.split('T')[0]}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={!selectedProject}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
-              {selectedProject && (
-                <p className="mt-1 text-sm text-gray-500">
+              {selectedProject ? (
+                <p className="mt-1 text-xs text-gray-500">
                   Project duration: {new Date(selectedProject.startDate).toLocaleDateString()} - {new Date(selectedProject.endDate).toLocaleDateString()}
                 </p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-500">Select a project first to set the due date</p>
               )}
             </div>
           </div>
