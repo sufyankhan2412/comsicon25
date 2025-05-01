@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+import { AuthContext } from '../context/AuthContext';
 import ManagerHome from './ManagerHome';
 import ProjectsList from './ProjectsList';
 import ProjectDetail from './ProjectDetail';
