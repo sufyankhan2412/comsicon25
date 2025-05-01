@@ -14,6 +14,10 @@ import ProjectsList from './pages/ProjectsList';
 import CreateProject from './pages/CreateProject';
 import EditProject from './pages/EditProject';
 import ProjectDetails from './pages/ProjectDetails';
+import Team from './pages/Team';
+import Settings from './pages/Settings';
+import CreateTask from './pages/CreateTask';
+import TeamMemberDetails from './pages/TeamMemberDetails';
 
 import "./index.css";
 
@@ -47,6 +51,11 @@ function App() {
               <Route path="projects/create" element={<CreateProject />} />
               <Route path="projects/:id" element={<ProjectDetails />} />
               <Route path="projects/:id/edit" element={<EditProject />} />
+              <Route path="tasks" element={<Tasks />} />
+              <Route path="tasks/create" element={<CreateTask />} />
+              <Route path="team" element={<Team />} />
+              <Route path="team/:id" element={<TeamMemberDetails />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
           </Route>
         </Routes>
