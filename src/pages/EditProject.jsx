@@ -1,9 +1,10 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-const CreateProject = () => {
+const EditProject = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { token } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: '',
@@ -14,6 +15,36 @@ const CreateProject = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/projects/${id}`, {
+          headers: {
+            'x-auth-token': token
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch project');
+        }
+
+        const data = await response.json();
+        setFormData({
+          name: data.name,
+          description: data.description,
+          startDate: data.startDate.split('T')[0],
+          endDate: data.endDate.split('T')[0],
+          status: data.status
+        });
+      } catch (err) {
+        console.error('Error fetching project:', err);
+        setError('Failed to load project details');
+      }
+    };
+
+    fetchProject();
+  }, [id, token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,8 +60,8 @@ const CreateProject = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/projects', {
-        method: 'POST',
+      const response = await fetch(`http://localhost:5000/api/projects/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'x-auth-token': token
@@ -41,12 +72,12 @@ const CreateProject = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.msg || 'Failed to create project');
+        throw new Error(data.msg || 'Failed to update project');
       }
 
       navigate('/manager-dashboard/projects');
     } catch (err) {
-      console.error('Error creating project:', err);
+      console.error('Error updating project:', err);
       setError(err.message);
       setLoading(false);
     }
@@ -55,8 +86,8 @@ const CreateProject = () => {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Create New Project</h1>
-        <p className="text-gray-600">Fill in the details below to create a new project</p>
+        <h1 className="text-2xl font-bold text-gray-800">Edit Project</h1>
+        <p className="text-gray-600">Update the project details below</p>
       </div>
 
       {error && (
@@ -159,7 +190,7 @@ const CreateProject = () => {
             disabled={loading}
             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            {loading ? 'Creating...' : 'Create Project'}
+            {loading ? 'Updating...' : 'Update Project'}
           </button>
         </div>
       </form>
@@ -167,4 +198,4 @@ const CreateProject = () => {
   );
 };
 
-export default CreateProject;
+export default EditProject; 

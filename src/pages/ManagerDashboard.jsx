@@ -1,16 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import ManagerHome from './ManagerHome';
-import ProjectsList from './ProjectsList';
-import ProjectDetail from './ProjectDetail';
-import CreateProject from './CreateProject';
-import EditProject from './EditProject';
-import TasksList from './TasksList';
-import CreateTask from '.CreateTask';
-import EditTask from './EditTask';
-import TeamMembers from './TeamMembers';
-import './ManagerDashboard.css';
 
 const ManagerDashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -34,91 +24,80 @@ const ManagerDashboard = () => {
   };
   
   if (!user) {
-    return <div className="loading">Loading user data...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Loading user data...</div>;
   }
   
   return (
-    <div className="manager-dashboard-container">
-      <aside className={`manager-sidebar ${isMobileSidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
-          <h2>Manager Dashboard</h2>
-          <div className="user-info">
-            <div className="avatar">{user.name.charAt(0)}</div>
-            <div className="user-details">
-              <p className="user-name">{user.name}</p>
-              <p className="user-role">{user.role}</p>
+    <div className="min-h-screen bg-gray-100">
+      <div className="flex">
+        {/* Sidebar */}
+        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+          <div className="p-4 border-b">
+            <h2 className="text-xl font-bold text-gray-800">Manager Dashboard</h2>
+            <div className="flex items-center mt-4">
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                {user.name.charAt(0)}
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-700">{user.name}</p>
+                <p className="text-xs text-gray-500">{user.role}</p>
+              </div>
             </div>
           </div>
-        </div>
-        <nav className="sidebar-nav">
-          <NavLink 
-            to="/manager-dashboard" 
-            end
-            className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
-            onClick={() => setIsMobileSidebarOpen(false)}
-          >
-            <i className="fas fa-home"></i>
-            <span>Home</span>
-          </NavLink>
-          <NavLink 
-            to="/manager-dashboard/projects" 
-            className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
-            onClick={() => setIsMobileSidebarOpen(false)}
-          >
-            <i className="fas fa-project-diagram"></i>
-            <span>Projects</span>
-          </NavLink>
-          <NavLink 
-            to="/manager-dashboard/tasks" 
-            className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
-            onClick={() => setIsMobileSidebarOpen(false)}
-          >
-            <i className="fas fa-tasks"></i>
-            <span>Tasks</span>
-          </NavLink>
-          <NavLink 
-            to="/manager-dashboard/team" 
-            className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
-            onClick={() => setIsMobileSidebarOpen(false)}
-          >
-            <i className="fas fa-users"></i>
-            <span>Team Members</span>
-          </NavLink>
-        </nav>
-        <div className="sidebar-footer">
-          <button onClick={handleLogout} className="btn-logout">
-            <i className="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-      
-      <div className="manager-content-wrapper">
-        <header className="manager-header">
-          <button className="mobile-menu-toggle" onClick={toggleMobileSidebar}>
-            <i className="fas fa-bars"></i>
-          </button>
-          <h1>Manager Portal</h1>
-          <div className="header-actions">
-            <div className="notifications">
-              <i className="fas fa-bell"></i>
-            </div>
+          <nav className="p-4">
+            <NavLink 
+              to="/manager-dashboard" 
+              end
+              className={({ isActive }) => 
+                `flex items-center p-2 rounded-lg mb-2 ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setIsMobileSidebarOpen(false)}
+            >
+              <i className="fas fa-home mr-3"></i>
+              <span>Home</span>
+            </NavLink>
+            <NavLink 
+              to="/manager-dashboard/projects" 
+              className={({ isActive }) => 
+                `flex items-center p-2 rounded-lg mb-2 ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setIsMobileSidebarOpen(false)}
+            >
+              <i className="fas fa-project-diagram mr-3"></i>
+              <span>Projects</span>
+            </NavLink>
+          </nav>
+          <div className="absolute bottom-0 w-full p-4 border-t">
+            <button 
+              onClick={handleLogout} 
+              className="w-full flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-lg"
+            >
+              <i className="fas fa-sign-out-alt mr-2"></i>
+              <span>Logout</span>
+            </button>
           </div>
-        </header>
+        </div>
         
-        <main className="manager-content">
-          <Routes>
-            <Route path="/" element={<ManagerHome />} />
-            <Route path="/projects" element={<ProjectsList />} />
-            <Route path="/projects/new" element={<CreateProject />} />
-            <Route path="/projects/:id" element={<ProjectDetail />} />
-            <Route path="/projects/:id/edit" element={<EditProject />} />
-            <Route path="/tasks" element={<TasksList />} />
-            <Route path="/tasks/new" element={<CreateTask />} />
-            <Route path="/tasks/:id/edit" element={<EditTask />} />
-            <Route path="/team" element={<TeamMembers />} />
-          </Routes>
-        </main>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col md:ml-64">
+          <header className="bg-white shadow-sm p-4 flex items-center justify-between">
+            <button 
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+              onClick={toggleMobileSidebar}
+            >
+              <i className="fas fa-bars"></i>
+            </button>
+            <h1 className="text-xl font-semibold text-gray-800">Manager Portal</h1>
+            <div className="flex items-center">
+              <div className="relative">
+                <i className="fas fa-bell text-gray-600 cursor-pointer hover:text-gray-800"></i>
+                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+              </div>
+            </div>
+          </header>
+          
+          <main className="flex-1 p-6 overflow-auto">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </div>
   );

@@ -1,12 +1,19 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/dashboard.jsx';
+import ManagerDashboard from './pages/ManagerDashboard';
 import Home from './pages/Home';
 import Tasks from './pages/Tasks';
 import Chat from './pages/Chat';
 import { AuthProvider } from './context/AuthContext.jsx';
+import ManagerHome from './pages/ManagerHome';
+import ProjectsList from './pages/ProjectsList';
+import CreateProject from './pages/CreateProject';
+import EditProject from './pages/EditProject';
+import ProjectDetails from './pages/ProjectDetails';
 
 import "./index.css";
 
@@ -25,6 +32,21 @@ function App() {
               <Route path="home" element={<Home />} />
               <Route path="tasks" element={<Tasks />} />
               <Route path="chat" element={<Chat />} />
+            </Route>
+
+            <Route
+              path="/manager-dashboard"
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <ManagerDashboard />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<ManagerHome />} />
+              <Route path="projects" element={<ProjectsList />} />
+              <Route path="projects/create" element={<CreateProject />} />
+              <Route path="projects/:id" element={<ProjectDetails />} />
+              <Route path="projects/:id/edit" element={<EditProject />} />
             </Route>
           </Route>
         </Routes>
