@@ -1,6 +1,6 @@
 // pages/dashboard/Chat.js
 import { useState, useEffect, useContext, useRef } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import io from 'socket.io-client';
 
 const Chat = () => {
