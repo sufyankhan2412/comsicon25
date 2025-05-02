@@ -18,6 +18,7 @@ import Team from './pages/Team';
 import Settings from './pages/Settings';
 import CreateTask from './pages/CreateTask';
 import TeamMemberDetails from './pages/TeamMemberDetails';
+import InviteMember from './pages/InviteMember';
 
 import "./index.css";
 
@@ -54,6 +55,7 @@ function App() {
               <Route path="tasks" element={<Tasks />} />
               <Route path="tasks/create" element={<CreateTask />} />
               <Route path="team" element={<Team />} />
+              <Route path="team/invite" element={<InviteMember />} />
               <Route path="team/:id" element={<TeamMemberDetails />} />
               <Route path="chat" element={<Chat />} />
               <Route path="settings" element={<Settings />} />
