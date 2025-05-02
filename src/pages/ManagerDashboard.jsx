@@ -64,6 +64,15 @@ const ManagerDashboard = () => {
               <i className="fas fa-project-diagram mr-3"></i>
               <span>Projects</span>
             </NavLink>
+            <NavLink 
+              to="/manager-dashboard/chat" 
+              className={({ isActive }) => 
+                `flex items-center p-2 rounded-lg mb-2 ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setIsMobileSidebarOpen(false)}
+            >
+              <i className="fas fa-comments mr-3"></i>
+              <span>Team Chat</span>
+            </NavLink>
           </nav>
           <div className="absolute bottom-0 w-full p-4 border-t">
             <button 

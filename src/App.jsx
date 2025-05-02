@@ -55,6 +55,7 @@ function App() {
               <Route path="tasks/create" element={<CreateTask />} />
               <Route path="team" element={<Team />} />
               <Route path="team/:id" element={<TeamMemberDetails />} />
+              <Route path="chat" element={<Chat />} />
               <Route path="settings" element={<Settings />} />
             </Route>
           </Route>

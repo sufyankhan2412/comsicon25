@@ -1,15 +1,24 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaProjectDiagram, FaTasks, FaUsers, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import React, { useContext } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FaHome, FaProjectDiagram, FaTasks, FaUsers, FaCog, FaSignOutAlt, FaComments } from 'react-icons/fa';
+import { AuthContext } from '../context/AuthContext';
 
 const ManagerLayout = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const navItems = [
     { path: '/manager-dashboard', icon: <FaHome />, label: 'Dashboard' },
     { path: '/manager-dashboard/projects', icon: <FaProjectDiagram />, label: 'Projects' },
     { path: '/manager-dashboard/tasks', icon: <FaTasks />, label: 'Tasks' },
     { path: '/manager-dashboard/team', icon: <FaUsers />, label: 'Team' },
+    { path: '/manager-dashboard/chat', icon: <FaComments />, label: 'Team Chat' },
     { path: '/manager-dashboard/settings', icon: <FaCog />, label: 'Settings' },
   ];
 
@@ -38,7 +47,10 @@ const ManagerLayout = ({ children }) => {
         </nav>
 
         <div className="absolute bottom-0 w-full p-4">
-          <button className="flex items-center w-full px-4 py-2 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-2 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg"
+          >
             <FaSignOutAlt className="mr-3" />
             Logout
           </button>
