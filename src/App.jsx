@@ -1,71 +1,69 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import ProtectedRoute from './ProtectedRoute';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, AuthContext } from './context/AuthContext';
+import Dashboard from './pages/dashboard';
+import ManagerDashboard from './pages/ManagerDashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Dashboard from './pages/dashboard.jsx';
-import ManagerDashboard from './pages/ManagerDashboard';
 import Home from './pages/Home';
 import Tasks from './pages/Tasks';
+import Team from './pages/Team';
 import Chat from './pages/Chat';
-import { AuthProvider } from './context/AuthContext.jsx';
+import Settings from './pages/Settings';
+import ProtectedRoute from './ProtectedRoute';
 import ManagerHome from './pages/ManagerHome';
 import ProjectsList from './pages/ProjectsList';
 import CreateProject from './pages/CreateProject';
 import EditProject from './pages/EditProject';
 import ProjectDetails from './pages/ProjectDetails';
-import Team from './pages/Team';
-import Settings from './pages/Settings';
 import CreateTask from './pages/CreateTask';
 import TeamMemberDetails from './pages/TeamMemberDetails';
 import InviteMember from './pages/InviteMember';
 
 import "./index.css";
 
-function App() {
+const AppRoutes = () => {
+  const { user } = React.useContext(AuthContext);
+
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'manager' ? '/manager-dashboard' : '/dashboard'} />} />
+      <Route path="/signup" element={!user ? <Signup /> : <Navigate to={user.role === 'manager' ? '/manager-dashboard' : '/dashboard'} />} />
+
+      {/* Regular Dashboard Routes */}
+      <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />}>
+        <Route index element={<Home />} />
+        <Route path="tasks" element={<Tasks />} />
+        <Route path="team" element={<Team />} />
+        <Route path="chat" element={<Chat />} />
+        <Route path="settings" element={<Settings />} />
+      </Route>
+
+      {/* Manager Dashboard Routes */}
+      <Route path="/manager-dashboard" element={user?.role === 'manager' ? <ManagerDashboard /> : <Navigate to="/dashboard" />}>
+        <Route index element={<Home />} />
+        <Route path="tasks" element={<Tasks />} />
+        <Route path="team" element={<Team />} />
+        <Route path="chat" element={<Chat />} />
+        <Route path="settings" element={<Settings />} />
+      </Route>
+
+      {/* Default Route */}
+      <Route path="/" element={<Navigate to={user ? (user.role === 'manager' ? '/manager-dashboard' : '/dashboard') : '/login'} />} />
+    </Routes>
+  );
+};
+
+const App = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/" element={<Login />} />
-          
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />}>
-              <Route index element={<Navigate to="home" replace />} />
-              <Route path="home" element={<Home />} />
-              <Route path="tasks" element={<Tasks />} />
-              <Route path="chat" element={<Chat />} />
-            </Route>
-
-            <Route
-              path="/manager-dashboard"
-              element={
-                <ProtectedRoute allowedRoles={['manager']}>
-                  <ManagerDashboard />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<ManagerHome />} />
-              <Route path="projects" element={<ProjectsList />} />
-              <Route path="projects/create" element={<CreateProject />} />
-              <Route path="projects/:id" element={<ProjectDetails />} />
-              <Route path="projects/:id/edit" element={<EditProject />} />
-              <Route path="tasks" element={<Tasks />} />
-              <Route path="tasks/create" element={<CreateTask />} />
-              <Route path="team" element={<Team />} />
-              <Route path="team/invite" element={<InviteMember />} />
-              <Route path="team/:id" element={<TeamMemberDetails />} />
-              <Route path="chat" element={<Chat />} />
-              <Route path="settings" element={<Settings />} />
-            </Route>
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <Router>
+        <AppRoutes />
+      </Router>
     </AuthProvider>
   );
-}
+};
 
 export default App;
 

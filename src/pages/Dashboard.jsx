@@ -4,6 +4,8 @@ import { AuthContext } from '../context/AuthContext';
 import Home from './Home';
 import Tasks from './Tasks';
 import Chat from './Chat';
+import Team from './Team';
+import Settings from './Settings';
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -25,7 +27,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-lg">
+      <aside className="relative w-64 bg-white shadow-lg">
         <div className="p-6">
           <h2 className="text-2xl font-bold text-gray-800">Team Dashboard</h2>
           <div className="mt-6 flex items-center space-x-4">
@@ -68,6 +70,19 @@ const Dashboard = () => {
             <span>Tasks</span>
           </NavLink>
           <NavLink 
+            to="/dashboard/team" 
+            className={({ isActive }) => 
+              `flex items-center px-6 py-3 text-sm font-medium ${
+                isActive 
+                  ? 'bg-primary-50 text-primary-600 border-l-4 border-primary-600' 
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`
+            }
+          >
+            <i className="fas fa-users mr-3"></i>
+            <span>Team</span>
+          </NavLink>
+          <NavLink 
             to="/dashboard/chat" 
             className={({ isActive }) => 
               `flex items-center px-6 py-3 text-sm font-medium ${
@@ -79,6 +94,19 @@ const Dashboard = () => {
           >
             <i className="fas fa-comments mr-3"></i>
             <span>Team Chat</span>
+          </NavLink>
+          <NavLink 
+            to="/dashboard/settings" 
+            className={({ isActive }) => 
+              `flex items-center px-6 py-3 text-sm font-medium ${
+                isActive 
+                  ? 'bg-primary-50 text-primary-600 border-l-4 border-primary-600' 
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`
+            }
+          >
+            <i className="fas fa-cog mr-3"></i>
+            <span>Settings</span>
           </NavLink>
         </nav>
 
@@ -98,7 +126,9 @@ const Dashboard = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/tasks" element={<Tasks />} />
+          <Route path="/team" element={<Team />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
     </div>

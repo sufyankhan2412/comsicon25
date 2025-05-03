@@ -1,6 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import Tasks from './Tasks';
+import Team from './Team';
+import Chat from './Chat';
+import Settings from './Settings';
+import Home from './Home';
 
 const ManagerDashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -31,7 +36,7 @@ const ManagerDashboard = () => {
     <div className="min-h-screen bg-gray-100">
       <div className="flex">
         {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+        <div className={`relative md:fixed md:inset-y-0 md:left-0 md:z-50 md:w-64 w-full bg-white shadow-lg transform transition-transform duration-200 ease-in-out ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 flex flex-col`}>
           <div className="p-4 border-b">
             <h2 className="text-xl font-bold text-gray-800">Manager Dashboard</h2>
             <div className="flex items-center mt-4">
@@ -44,7 +49,7 @@ const ManagerDashboard = () => {
               </div>
             </div>
           </div>
-          <nav className="p-4">
+          <nav className="p-4 flex-grow">
             <NavLink 
               to="/manager-dashboard" 
               end
@@ -56,13 +61,22 @@ const ManagerDashboard = () => {
               <span>Home</span>
             </NavLink>
             <NavLink 
-              to="/manager-dashboard/projects" 
+              to="/manager-dashboard/tasks" 
               className={({ isActive }) => 
                 `flex items-center p-2 rounded-lg mb-2 ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
               onClick={() => setIsMobileSidebarOpen(false)}
             >
-              <i className="fas fa-project-diagram mr-3"></i>
-              <span>Projects</span>
+              <i className="fas fa-tasks mr-3"></i>
+              <span>Tasks</span>
+            </NavLink>
+            <NavLink 
+              to="/manager-dashboard/team" 
+              className={({ isActive }) => 
+                `flex items-center p-2 rounded-lg mb-2 ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setIsMobileSidebarOpen(false)}
+            >
+              <i className="fas fa-users mr-3"></i>
+              <span>Team</span>
             </NavLink>
             <NavLink 
               to="/manager-dashboard/chat" 
@@ -73,13 +87,22 @@ const ManagerDashboard = () => {
               <i className="fas fa-comments mr-3"></i>
               <span>Team Chat</span>
             </NavLink>
+            <NavLink 
+              to="/manager-dashboard/settings" 
+              className={({ isActive }) => 
+                `flex items-center p-2 rounded-lg mb-2 ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setIsMobileSidebarOpen(false)}
+            >
+              <i className="fas fa-cog mr-3"></i>
+              <span>Settings</span>
+            </NavLink>
           </nav>
-          <div className="absolute bottom-0 w-full p-4 border-t">
+          <div className="mt-auto bg-red-50 hover:bg-red-100">
             <button 
               onClick={handleLogout} 
-              className="w-full flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-lg"
+              className="flex items-center w-full p-4 text-red-600"
             >
-              <i className="fas fa-sign-out-alt mr-2"></i>
+              <i className="fas fa-sign-out-alt mr-3"></i>
               <span>Logout</span>
             </button>
           </div>

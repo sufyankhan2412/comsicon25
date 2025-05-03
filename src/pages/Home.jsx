@@ -4,77 +4,74 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const Home = () => {
-  const { user } = useContext(AuthContext);
-  const mockTasks = [
-    {
-      _id: '1',
-      title: 'Frontend Development',
-      description: 'Implement the user dashboard interface with React and Tailwind CSS',
-      status: 'pending',
-      priority: 'high',
-      assignedTo: { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com' },
-      dueDate: '2024-03-20',
-      createdAt: new Date().toISOString()
-    },
-    {
-      _id: '2',
-      title: 'API Integration',
-      description: 'Connect frontend components with backend API endpoints',
-      status: 'in-progress',
-      priority: 'high',
-      assignedTo: { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com' },
-      dueDate: '2024-03-25',
-      createdAt: new Date().toISOString()
-    },
-    {
-      _id: '3',
-      title: 'User Authentication',
-      description: 'Implement JWT-based authentication system',
-      status: 'completed',
-      priority: 'medium',
-      assignedTo: { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com' },
-      dueDate: '2024-03-15',
-      createdAt: new Date().toISOString()
-    }
-  ];
-
-  const mockTeamMembers = [
-    { _id: '1', name: 'Ashar Malik', email: 'asharmalik6231@gmail.com', role: 'Team Member' },
-    { _id: '2', name: 'sufyan', email: 'sufyan@gmail.com', role: 'Team Member' },
-    { _id: '3', name: 'Ashar Malik', email: 'asharmalik621@gmail.com', role: 'Team Member' }
-  ];
-
+  const { user, token } = useContext(AuthContext);
   const [stats, setStats] = useState({
     totalTasks: 0,
     pendingTasks: 0,
     completedTasks: 0,
-    teamMembers: 3
+    teamMembers: 0
   });
   const [recentTasks, setRecentTasks] = useState([]);
-  const [teamMembers, setTeamMembers] = useState(mockTeamMembers);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   useEffect(() => {
-    // Filter tasks for the current user
-    const userTasks = mockTasks.filter(task => 
-      task.assignedTo.email === 'asharmalik6231@gmail.com'
-    );
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch tasks
+        const tasksResponse = await fetch('http://localhost:5000/api/tasks', {
+          headers: {
+            'x-auth-token': token
+          }
+        });
+        
+        if (!tasksResponse.ok) throw new Error('Failed to fetch tasks');
+        const tasks = await tasksResponse.json();
+        
+        // Filter tasks for the current user
+        const userTasks = tasks.filter(task => 
+          task.assignedTo._id === user._id
+        );
+        
+        // Fetch team members
+        const teamResponse = await fetch('http://localhost:5000/api/users', {
+          headers: {
+            'x-auth-token': token
+          }
+        });
+        
+        if (!teamResponse.ok) throw new Error('Failed to fetch team members');
+        const teamData = await teamResponse.json();
+        
+        setStats({
+          totalTasks: userTasks.length,
+          pendingTasks: userTasks.filter(task => task.status === 'pending').length,
+          completedTasks: userTasks.filter(task => task.status === 'completed').length,
+          teamMembers: teamData.length
+        });
+        
+        // Sort tasks by creation date and take the 5 most recent
+        const sortedTasks = [...userTasks].sort((a, b) => 
+          new Date(b.createdAt) - new Date(a.createdAt)
+        ).slice(0, 5);
+        
+        setRecentTasks(sortedTasks);
+        setTeamMembers(teamData);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
     
-    setStats({
-      totalTasks: userTasks.length,
-      pendingTasks: userTasks.filter(task => task.status === 'pending').length,
-      completedTasks: userTasks.filter(task => task.status === 'completed').length,
-      teamMembers: 3
-    });
-    
-    // Sort tasks by creation date and take the 5 most recent
-    const sortedTasks = [...userTasks].sort((a, b) => 
-      new Date(b.createdAt) - new Date(a.createdAt)
-    ).slice(0, 5);
-    
-    setRecentTasks(sortedTasks);
-    setLoading(false);
-  }, []);
+    if (token && user) {
+      fetchDashboardData();
+    }
+  }, [token, user]);
 
   const getStatusClass = (status) => {
     switch (status) {

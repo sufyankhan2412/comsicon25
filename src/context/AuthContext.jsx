@@ -63,6 +63,10 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -75,7 +79,8 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         logout,
-        isAuthenticated: !!token && !!user
+        isAuthenticated: !!token && !!user,
+        updateUser
       }}
     >
       {children}
