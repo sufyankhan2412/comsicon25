@@ -4,141 +4,97 @@ import { Navigate } from 'react-router-dom';
 
 const InviteMember = () => {
   const { token, user } = useContext(AuthContext);
-  const [method, setMethod] = useState('code');
-  const [email, setEmail] = useState('');
   const [inviteCode, setInviteCode] = useState('');
-  const [inviteMessage, setInviteMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Redirect non-managers
   if (user?.role !== 'manager') {
     return <Navigate to="/dashboard" />;
   }
 
-  const handleInvite = async (e) => {
+  const handleGenerateCode = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setInviteCode('');
-    setInviteMessage('');
+    setError('');
+    setSuccess('');
+    
     try {
       const res = await fetch('http://localhost:5000/api/users/invite', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-auth-token': token,
-        },
-        body: JSON.stringify(
-          method === 'code'
-            ? { method: 'code' }
-            : { method: 'email', email }
-        ),
+        }
       });
+      
       const data = await res.json();
-      if (method === 'code' && data.code) {
-        setInviteCode(data.code);
-      } else if (method === 'email' && data.message) {
-        setInviteMessage(data.message);
-      } else if (data.msg) {
-        setInviteMessage(data.msg);
+      
+      if (!res.ok) {
+        throw new Error(data.msg || 'Failed to generate invite code');
       }
+      
+      setInviteCode(data.code);
+      setSuccess('Invite code generated successfully!');
     } catch (err) {
-      setInviteMessage('Error sending invite.');
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const handleCopy = () => {
+  const handleCopyCode = () => {
     navigator.clipboard.writeText(inviteCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    setSuccess('Code copied to clipboard!');
   };
 
   return (
-    <>
-        <div className="min-h-[80vh] flex items-center justify-center bg-gray-100 py-8">
-        <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-10">
-          <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Invite Team Member</h2>
-          <form onSubmit={handleInvite} className="space-y-6">
-            <div className="flex items-center justify-center gap-8 mb-2">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  value="code"
-                  checked={method === 'code'}
-                  onChange={() => setMethod('code')}
-                  className="accent-blue-600"
-                />
-                <span className="ml-2 text-gray-700 font-medium">Invite by Code</span>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  value="email"
-                  checked={method === 'email'}
-                  onChange={() => setMethod('email')}
-                  className="accent-blue-600"
-                />
-                <span className="ml-2 text-gray-700 font-medium">Invite by Email</span>
-              </label>
-            </div>
-            {method === 'email' && (
-              <input
-                type="email"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Enter email address"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
-            )}
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow"
-              disabled={loading}
-            >
-              {loading ? 'Sending...' : 'Send Invite'}
-            </button>
-          </form>
+    <div className="min-h-[80vh] flex items-center justify-center bg-gray-100 py-8">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-10">
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Generate Team Invite Code</h2>
+        
+        {error && (
+          <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="mb-4 bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded relative" role="alert">
+            {success}
+          </div>
+        )}
+
+        <div className="space-y-6">
+          <button
+            onClick={handleGenerateCode}
+            disabled={loading}
+            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Generating...' : 'Generate New Invite Code'}
+          </button>
+
           {inviteCode && (
             <div className="mt-6">
-              <div className="font-semibold mb-1 text-gray-700">Invite Code:</div>
+              <div className="font-semibold mb-2 text-gray-700">Invite Code:</div>
               <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg flex items-center justify-between">
                 <span className="font-mono text-blue-700 text-base select-all">{inviteCode}</span>
                 <button
-                  className="ml-3 px-3 py-1 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition relative"
-                  onClick={handleCopy}
-                  type="button"
+                  onClick={handleCopyCode}
+                  className="ml-3 px-3 py-1 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
                 >
                   Copy
-                  {copied && (
-                    <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs rounded px-2 py-1 shadow animate-fade-in-out" style={{zIndex: 10}}>
-                      Copied!
-                    </span>
-                  )}
                 </button>
               </div>
+              <p className="mt-2 text-sm text-gray-500">
+                Share this code with team members. They can use it to join your team.
+              </p>
             </div>
-          )}
-          {inviteMessage && (
-            <div className="mt-6 text-green-600 text-center font-medium">{inviteMessage}</div>
           )}
         </div>
       </div>
-      <style>{`
-        @keyframes fade-in-out {
-          0% { opacity: 0; transform: translateY(-10px) scale(0.95); }
-          20% { opacity: 1; transform: translateY(0) scale(1); }
-          80% { opacity: 1; transform: translateY(0) scale(1); }
-          100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
-        }
-        .animate-fade-in-out {
-          animation: fade-in-out 1.5s;
-        }
-      `}</style>
-    
-    </>
-    
+    </div>
   );
 };
 

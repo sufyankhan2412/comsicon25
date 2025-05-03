@@ -20,6 +20,7 @@ import CreateTask from './pages/CreateTask';
 import TaskDetails from './pages/TaskDetails';
 import TeamMemberDetails from './pages/TeamMemberDetails';
 import InviteMember from './pages/InviteMember';
+import ChooseRole from './pages/ChooseRole';
 
 import "./index.css";
 
@@ -31,9 +32,10 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'manager' ? '/manager-dashboard' : '/dashboard'} />} />
       <Route path="/signup" element={!user ? <Signup /> : <Navigate to={user.role === 'manager' ? '/manager-dashboard' : '/dashboard'} />} />
+      <Route path="/choose-role" element={user && !user.role ? <ChooseRole /> : <Navigate to={user?.role === 'manager' ? '/manager-dashboard' : '/dashboard'} />} />
 
       {/* Regular Dashboard Routes */}
-      <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />}>
+      <Route path="/dashboard" element={user?.role === 'team-member' ? <Dashboard /> : <Navigate to="/manager-dashboard" />}>
         <Route index element={<Home />} />
         <Route path="tasks" element={<Tasks />} />
         <Route path="tasks/:id" element={<TaskDetails />} />

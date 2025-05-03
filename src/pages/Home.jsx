@@ -36,21 +36,30 @@ const Home = () => {
           task.assignedTo._id === user._id
         );
         
-        // Fetch team members
-        const teamResponse = await fetch('http://localhost:5000/api/users', {
+        // Fetch team members from the team endpoint
+        const teamResponse = await fetch('http://localhost:5000/api/teams/members', {
           headers: {
             'x-auth-token': token
           }
         });
         
-        if (!teamResponse.ok) throw new Error('Failed to fetch team members');
-        const teamData = await teamResponse.json();
+        if (!teamResponse.ok) {
+          if (teamResponse.status === 404) {
+            // User is not part of any team yet
+            setTeamMembers([]);
+          } else {
+            throw new Error('Failed to fetch team members');
+          }
+        } else {
+          const teamData = await teamResponse.json();
+          setTeamMembers(teamData);
+        }
         
         setStats({
           totalTasks: userTasks.length,
           pendingTasks: userTasks.filter(task => task.status === 'pending').length,
           completedTasks: userTasks.filter(task => task.status === 'completed').length,
-          teamMembers: teamData.length
+          teamMembers: teamMembers.length
         });
         
         // Sort tasks by creation date and take the 5 most recent
@@ -59,7 +68,6 @@ const Home = () => {
         ).slice(0, 5);
         
         setRecentTasks(sortedTasks);
-        setTeamMembers(teamData);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
@@ -71,7 +79,7 @@ const Home = () => {
     if (token && user) {
       fetchDashboardData();
     }
-  }, [token, user]);
+  }, [token, user, teamMembers.length]);
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -219,7 +227,14 @@ const Home = () => {
           </div>
           
           {teamMembers.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No team members found</p>
+            <div className="text-center py-4">
+              <p className="text-gray-500 mb-4">No team members found</p>
+              {user.role === 'team-member' && (
+                <p className="text-sm text-gray-500">
+                  You haven't joined any team yet. Ask your manager for an invite code to join their team.
+                </p>
+              )}
+            </div>
           ) : (
             <div className="space-y-4">
               {teamMembers.map(member => (

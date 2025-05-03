@@ -39,7 +39,7 @@ function Login() {
       } else if (data.user.role === 'team-member') {
         navigate('/dashboard');
       } else {
-        navigate('/');
+        navigate('/choose-role');
       }
     } catch (err) {
       console.error('Login error:', err.message);

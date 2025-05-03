@@ -10,8 +10,7 @@ function Signup() {
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    role: 'team-member' // Default role
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
 
@@ -41,8 +40,7 @@ function Signup() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          password: formData.password,
-          role: formData.role
+          password: formData.password
         }),
       });
 
@@ -54,12 +52,7 @@ function Signup() {
 
       if (data.token && data.user) {
         login(data.user, data.token);
-        // Navigate based on role
-        if (data.user.role === 'manager') {
-          navigate('/manager-dashboard');
-        } else {
-          navigate('/dashboard');
-        }
+        navigate('/choose-role');
       } else {
         alert('Registration successful! Please login.');
         navigate('/login');
@@ -122,24 +115,6 @@ function Signup() {
                   required
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                Role
-              </label>
-              <div className="mt-1">
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  <option value="team-member">Team Member</option>
-                  <option value="manager">Manager</option>
-                </select>
               </div>
             </div>
 

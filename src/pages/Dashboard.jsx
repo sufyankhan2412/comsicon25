@@ -1,6 +1,7 @@
 import { Routes, Route, NavLink, useNavigate, Outlet } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { FaBars, FaTimes } from 'react-icons/fa';
 import Home from './Home';
 import Tasks from './Tasks';
 import Chat from './Chat';
@@ -10,6 +11,7 @@ import Settings from './Settings';
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   const handleLogout = () => {
     logout();
@@ -27,7 +29,19 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className="relative w-64 bg-white shadow-lg">
+      <aside
+        className={`
+          relative
+          w-64
+          bg-white
+          shadow-lg
+          transform
+          transition-transform
+          duration-300
+          ease-in-out
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+      >
         <div className="p-6">
           <h2 className="text-2xl font-bold text-gray-800">Team Dashboard</h2>
           <div className="mt-6 flex items-center space-x-4">
@@ -40,7 +54,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
+  
         <nav className="mt-6">
           <NavLink 
             to="/dashboard" 
@@ -109,8 +123,8 @@ const Dashboard = () => {
             <span>Settings</span>
           </NavLink>
         </nav>
-
-        <div className="absolute bottom-0 w-64 p-6">
+  
+        <div className="absolute bottom-0 w-full p-6">
           <button 
             onClick={handleLogout} 
             className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -120,7 +134,17 @@ const Dashboard = () => {
           </button>
         </div>
       </aside>
-      
+  
+      {/* Toggle Button sits in the flex row, not fixed */}
+      <div className="flex flex-col justify-start">
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 m-4 rounded-md bg-white shadow-md hover:bg-gray-100 focus:outline-none"
+        >
+          {isSidebarOpen ? <FaTimes /> : <FaBars />}
+        </button>
+      </div>
+  
       {/* Main Content */}
       <main className="flex-1 p-8">
         <Outlet />
