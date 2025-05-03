@@ -1,13 +1,16 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const ProjectDetails = () => {
   const { id } = useParams();
-  const { token } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { token, user } = useContext(AuthContext);
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [status, setStatus] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -24,6 +27,7 @@ const ProjectDetails = () => {
 
         const data = await response.json();
         setProject(data);
+        setStatus(data.status);
       } catch (err) {
         console.error('Error fetching project:', err);
         setError('Failed to load project details');
@@ -34,6 +38,47 @@ const ProjectDetails = () => {
 
     fetchProject();
   }, [id, token]);
+
+  const handleStatusChange = async (newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/projects/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update project status');
+      }
+      setStatus(newStatus);
+      setProject(prev => ({ ...prev, status: newStatus }));
+    } catch (err) {
+      setError('Failed to update status');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/projects/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'x-auth-token': token
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete project');
+      }
+      navigate('/manager-dashboard/projects');
+    } catch (err) {
+      setError('Failed to delete project');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -81,21 +126,28 @@ const ProjectDetails = () => {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="px-8 py-6 border-b border-gray-200">
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
                 <p className="mt-2 text-sm text-gray-600">Project Details</p>
               </div>
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap gap-2">
                 <Link
                   to={`/manager-dashboard/projects/${id}/edit`}
-                  className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
                 >
                   Edit Project
                 </Link>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="px-4 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting...' : 'Delete'}
+                </button>
                 <Link
                   to="/manager-dashboard/projects"
-                  className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
                 >
                   Back to Projects
                 </Link>
@@ -114,9 +166,22 @@ const ProjectDetails = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Status</p>
-                    <span className={`mt-2 inline-flex px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(project.status)}`}>
-                      {project.status.replace('-', ' ')}
-                    </span>
+                    {user?.role === 'manager' ? (
+                      <select
+                        value={status}
+                        onChange={e => handleStatusChange(e.target.value)}
+                        className={`mt-2 block w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${getStatusColor(status)}`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="on-hold">On Hold</option>
+                      </select>
+                    ) : (
+                      <span className={`mt-2 inline-flex px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(project.status)}`}>
+                        {project.status.replace('-', ' ')}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Start Date</p>

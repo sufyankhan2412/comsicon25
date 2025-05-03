@@ -36,7 +36,9 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />}>
         <Route index element={<Home />} />
         <Route path="tasks" element={<Tasks />} />
+        <Route path="tasks/:id" element={<TaskDetails />} />
         <Route path="team" element={<Team />} />
+        <Route path="team/:id" element={<TeamMemberDetails />} />
         <Route path="chat" element={<Chat />} />
         <Route path="settings" element={<Settings />} />
       </Route>

@@ -1,4 +1,4 @@
-import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
+import { Routes, Route, NavLink, useNavigate, Outlet } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import Home from './Home';
@@ -123,13 +123,7 @@ const Dashboard = () => {
       
       {/* Main Content */}
       <main className="flex-1 p-8">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/team" element={<Team />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+        <Outlet />
       </main>
     </div>
   );

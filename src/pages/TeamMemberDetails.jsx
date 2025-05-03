@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import ManagerLayout from '../components/ManagerLayout';
 import { FaEnvelope, FaPhone, FaCalendarAlt, FaTasks } from 'react-icons/fa';
 
 const TeamMemberDetails = () => {
@@ -68,38 +67,32 @@ const TeamMemberDetails = () => {
 
   if (loading) {
     return (
-      <ManagerLayout>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </ManagerLayout>
     );
   }
 
   if (error) {
     return (
-      <ManagerLayout>
         <div className="p-6">
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
             <span className="block sm:inline">{error}</span>
           </div>
         </div>
-      </ManagerLayout>
     );
   }
 
   if (!member) {
     return (
-      <ManagerLayout>
         <div className="p-6">
           <div className="text-center text-gray-600">Team member not found</div>
         </div>
-      </ManagerLayout>
     );
   }
 
   return (
-    <ManagerLayout>
+    <>
       <div className="space-y-6">
         {/* Member Profile */}
         <div className="bg-white rounded-xl shadow-sm p-6">
@@ -190,7 +183,7 @@ const TeamMemberDetails = () => {
           </div>
         </div>
       </div>
-    </ManagerLayout>
+    </>
   );
 };
 

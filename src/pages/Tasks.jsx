@@ -31,7 +31,7 @@ const Tasks = () => {
         const data = await response.json();
         setTasks(data);
         setLoading(false);
-    } catch (err) {
+      } catch (err) {
         console.error('Error fetching tasks:', err);
         setError(err.message);
         setLoading(false);
@@ -40,6 +40,31 @@ const Tasks = () => {
 
     fetchTasks();
   }, [token]);
+
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update task status');
+      }
+
+      // Update the local state
+      setTasks(tasks.map(task => 
+        task._id === taskId ? { ...task, status: newStatus } : task
+      ));
+    } catch (err) {
+      console.error('Error updating task status:', err);
+      setError(err.message);
+    }
+  };
 
   const handleNewTaskClick = (e) => {
     if (user?.role !== 'manager') {
@@ -220,9 +245,15 @@ const Tasks = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(task.status)}`}>
-                      {task.status}
-                    </span>
+                    <select
+                      value={task.status}
+                      onChange={(e) => handleStatusChange(task._id, e.target.value)}
+                      className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(task.status)} border-0 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="in-progress">In Progress</option>
+                      <option value="completed">Completed</option>
+                    </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
