@@ -108,7 +108,7 @@ const Tasks = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Tasks</h1>
         <Link
-          to={user?.role === 'manager' ? "/dashboard/tasks/create" : "#"}
+          to={user?.role === 'manager' ? "/manager-dashboard/tasks/create" : "#"}
           onClick={handleNewTaskClick}
           className={`inline-flex items-center px-4 py-2 rounded-lg transition-colors ${
             user?.role === 'manager' 
@@ -243,7 +243,7 @@ const Tasks = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link
-                      to={`/dashboard/tasks/${task._id}`}
+                      to={user?.role === 'manager' ? `/manager-dashboard/tasks/${task._id}` : `/dashboard/tasks/${task._id}`}
                       className="text-blue-600 hover:text-blue-900"
                     >
                       View Details

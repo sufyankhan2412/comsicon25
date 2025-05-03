@@ -17,6 +17,7 @@ import CreateProject from './pages/CreateProject';
 import EditProject from './pages/EditProject';
 import ProjectDetails from './pages/ProjectDetails';
 import CreateTask from './pages/CreateTask';
+import TaskDetails from './pages/TaskDetails';
 import TeamMemberDetails from './pages/TeamMemberDetails';
 import InviteMember from './pages/InviteMember';
 
@@ -48,7 +49,10 @@ const AppRoutes = () => {
         <Route path="projects/:id" element={<ProjectDetails />} />
         <Route path="projects/:id/edit" element={<EditProject />} />
         <Route path="tasks" element={<Tasks />} />
+        <Route path="tasks/create" element={<CreateTask />} />
+        <Route path="tasks/:id" element={<TaskDetails />} />
         <Route path="team" element={<Team />} />
+        <Route path="team/invite" element={<InviteMember />} />
         <Route path="chat" element={<Chat />} />
         <Route path="settings" element={<Settings />} />
       </Route>

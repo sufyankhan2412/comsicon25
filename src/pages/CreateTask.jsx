@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import ManagerLayout from '../components/ManagerLayout';
 
 const CreateTask = () => {
   const { token, user } = useContext(AuthContext);
@@ -149,18 +148,15 @@ const CreateTask = () => {
   // Only render for managers
   if (user?.role !== 'manager') {
     return (
-      <ManagerLayout>
         <div className="p-6">
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
             <span className="block sm:inline">You don't have permission to create tasks.</span>
           </div>
         </div>
-      </ManagerLayout>
     );
   }
 
   return (
-    <ManagerLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">Create New Task</h1>
@@ -310,7 +306,6 @@ const CreateTask = () => {
           </div>
         </form>
       </div>
-    </ManagerLayout>
   );
 };
 

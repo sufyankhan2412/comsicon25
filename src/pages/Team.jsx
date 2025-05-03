@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { FaPlus, FaSearch, FaUserPlus, FaEnvelope, FaPhone, FaUser } from 'react-icons/fa';
 
 const Team = () => {
-  const { token } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,13 +66,15 @@ const Team = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Team Members</h1>
-        <Link
-          to="/dashboard/team/invite"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <FaUserPlus className="mr-2" />
-          Invite Member
-        </Link>
+        {user?.role === 'manager' && (
+          <Link
+            to="/manager-dashboard/team/invite"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <FaUserPlus className="mr-2" />
+            Invite Member
+          </Link>
+        )}
       </div>
 
       {/* Search */}

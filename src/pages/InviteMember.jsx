@@ -1,15 +1,20 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import ManagerLayout from '../components/ManagerLayout';
+import { Navigate } from 'react-router-dom';
 
 const InviteMember = () => {
-  const { token } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
   const [method, setMethod] = useState('code');
   const [email, setEmail] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [inviteMessage, setInviteMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Redirect non-managers
+  if (user?.role !== 'manager') {
+    return <Navigate to="/dashboard" />;
+  }
 
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -50,8 +55,8 @@ const InviteMember = () => {
   };
 
   return (
-    <ManagerLayout>
-      <div className="min-h-[80vh] flex items-center justify-center bg-gray-100 py-8">
+    <>
+        <div className="min-h-[80vh] flex items-center justify-center bg-gray-100 py-8">
         <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-10">
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Invite Team Member</h2>
           <form onSubmit={handleInvite} className="space-y-6">
@@ -131,7 +136,9 @@ const InviteMember = () => {
           animation: fade-in-out 1.5s;
         }
       `}</style>
-    </ManagerLayout>
+    
+    </>
+    
   );
 };
 
