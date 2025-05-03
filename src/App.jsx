@@ -21,6 +21,7 @@ import TaskDetails from './pages/TaskDetails';
 import TeamMemberDetails from './pages/TeamMemberDetails';
 import InviteMember from './pages/InviteMember';
 import ChooseRole from './pages/ChooseRole';
+import LandingPage from './pages/LandingPage';
 
 import "./index.css";
 
@@ -30,6 +31,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'manager' ? '/manager-dashboard' : '/dashboard'} />} />
       <Route path="/signup" element={!user ? <Signup /> : <Navigate to={user.role === 'manager' ? '/manager-dashboard' : '/dashboard'} />} />
       <Route path="/choose-role" element={user && !user.role ? <ChooseRole /> : <Navigate to={user?.role === 'manager' ? '/manager-dashboard' : '/dashboard'} />} />
@@ -60,9 +62,6 @@ const AppRoutes = () => {
         <Route path="chat" element={<Chat />} />
         <Route path="settings" element={<Settings />} />
       </Route>
-
-      {/* Default Route */}
-      <Route path="/" element={<Navigate to={user ? (user.role === 'manager' ? '/manager-dashboard' : '/dashboard') : '/login'} />} />
     </Routes>
   );
 };
