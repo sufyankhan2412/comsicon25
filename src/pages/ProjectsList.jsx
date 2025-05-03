@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import ManagerLayout from '../components/ManagerLayout';
 import { FaPlus, FaSearch, FaFilter } from 'react-icons/fa';
 
 const ProjectsList = () => {
@@ -61,29 +60,29 @@ const ProjectsList = () => {
 
   if (loading) {
     return (
-      <ManagerLayout>
+      
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </ManagerLayout>
+      
     );
   }
 
   if (error) {
     return (
-      <ManagerLayout>
+      
         <div className="p-6">
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
             <strong className="font-bold">Error!</strong>
             <span className="block sm:inline"> {error}</span>
           </div>
         </div>
-      </ManagerLayout>
+      
     );
   }
 
   return (
-    <ManagerLayout>
+    
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -197,7 +196,7 @@ const ProjectsList = () => {
           )}
         </div>
       </div>
-    </ManagerLayout>
+    
   );
 };
 

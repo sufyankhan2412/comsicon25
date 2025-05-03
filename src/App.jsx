@@ -42,7 +42,11 @@ const AppRoutes = () => {
 
       {/* Manager Dashboard Routes */}
       <Route path="/manager-dashboard" element={user?.role === 'manager' ? <ManagerDashboard /> : <Navigate to="/dashboard" />}>
-        <Route index element={<Home />} />
+        <Route index element={<ManagerHome />} />
+        <Route path="projects" element={<ProjectsList />} />
+        <Route path="projects/create" element={<CreateProject />} />
+        <Route path="projects/:id" element={<ProjectDetails />} />
+        <Route path="projects/:id/edit" element={<EditProject />} />
         <Route path="tasks" element={<Tasks />} />
         <Route path="team" element={<Team />} />
         <Route path="chat" element={<Chat />} />

@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import ManagerLayout from '../components/ManagerLayout';
 
 const EditProject = () => {
   const navigate = useNavigate();
@@ -133,7 +132,6 @@ const EditProject = () => {
   };
 
   return (
-    <ManagerLayout>
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
           <div className="px-8 py-6 border-b border-gray-200">
@@ -289,7 +287,6 @@ const EditProject = () => {
           </form>
         </div>
       </div>
-    </ManagerLayout>
   );
 };
 

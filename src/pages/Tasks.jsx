@@ -5,13 +5,14 @@ import { AuthContext } from '../context/AuthContext';
 import { FaPlus, FaSearch, FaFilter, FaCalendarAlt, FaUser, FaExclamationTriangle } from 'react-icons/fa';
 
 const Tasks = () => {
-  const { token } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [showPermissionMessage, setShowPermissionMessage] = useState(false);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -39,6 +40,14 @@ const Tasks = () => {
 
     fetchTasks();
   }, [token]);
+
+  const handleNewTaskClick = (e) => {
+    if (user?.role !== 'manager') {
+      e.preventDefault();
+      setShowPermissionMessage(true);
+      setTimeout(() => setShowPermissionMessage(false), 3000);
+    }
+  };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -99,13 +108,25 @@ const Tasks = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Tasks</h1>
         <Link
-          to="/dashboard/tasks/create"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          to={user?.role === 'manager' ? "/dashboard/tasks/create" : "#"}
+          onClick={handleNewTaskClick}
+          className={`inline-flex items-center px-4 py-2 rounded-lg transition-colors ${
+            user?.role === 'manager' 
+              ? 'bg-blue-600 text-white hover:bg-blue-700' 
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           <FaPlus className="mr-2" />
           New Task
         </Link>
       </div>
+
+      {/* Permission Message */}
+      {showPermissionMessage && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
+          <span className="block sm:inline">Only managers can create new tasks.</span>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm p-6">

@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import ManagerLayout from '../components/ManagerLayout';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -51,40 +50,34 @@ const ProjectDetails = () => {
 
   if (loading) {
     return (
-      <ManagerLayout>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </ManagerLayout>
+      
     );
   }
 
   if (error) {
     return (
-      <ManagerLayout>
         <div className="p-6">
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
             {error}
           </div>
         </div>
-      </ManagerLayout>
     );
   }
 
   if (!project) {
     return (
-      <ManagerLayout>
         <div className="p-6">
           <div className="bg-yellow-50 border border-yellow-200 text-yellow-600 px-4 py-3 rounded relative" role="alert">
             Project not found
           </div>
         </div>
-      </ManagerLayout>
     );
   }
 
   return (
-    <ManagerLayout>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="px-8 py-6 border-b border-gray-200">
@@ -189,7 +182,6 @@ const ProjectDetails = () => {
           </div>
         </div>
       </div>
-    </ManagerLayout>
   );
 };
 
